@@ -1,6 +1,6 @@
 package com.willme.topactivity;
 
-import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,9 +14,10 @@ import android.service.quicksettings.TileService;
 /**
  * Created by Wen on 5/3/16.
  */
-@TargetApi(Build.VERSION_CODES.N)
 public class QuickSettingTileService extends TileService {
+
     public static final String ACTION_UPDATE_TITLE = "com.willme.topactivity.ACTION.UPDATE_TITLE";
+
     private UpdateTileReceiver mReceiver;
 
     public static void updateTile(Context context) {
@@ -45,7 +46,11 @@ public class QuickSettingTileService extends TileService {
 
     @Override
     public void onStartListening() {
-        registerReceiver(mReceiver, new IntentFilter(ACTION_UPDATE_TITLE));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mReceiver, new IntentFilter(ACTION_UPDATE_TITLE), Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(mReceiver, new IntentFilter(ACTION_UPDATE_TITLE));
+        }
         super.onStartListening();
         updateTile();
     }
@@ -61,7 +66,12 @@ public class QuickSettingTileService extends TileService {
         if (WatchingAccessibilityService.getInstance() == null || !Settings.canDrawOverlays(this)) {
             Intent intent = new Intent(this, MainActivity.class);
             intent.putExtra(MainActivity.EXTRA_FROM_QS_TILE, true);
-            startActivityAndCollapse(intent);
+            PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startActivityAndCollapse(pIntent);
+            } else {
+                startActivityAndCollapse(intent);
+            }
         } else {
             SPHelper.setIsShowWindow(this, !SPHelper.isShowWindow(this));
             if (SPHelper.isShowWindow(this)) {
@@ -85,6 +95,7 @@ public class QuickSettingTileService extends TileService {
     }
 
     class UpdateTileReceiver extends BroadcastReceiver {
+
         @Override
         public void onReceive(Context context, Intent intent) {
             updateTile();

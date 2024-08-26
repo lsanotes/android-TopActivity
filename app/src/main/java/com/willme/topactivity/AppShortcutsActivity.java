@@ -1,17 +1,15 @@
 package com.willme.topactivity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 /**
  * Created by Wen on 16/02/2017.
  */
-@TargetApi(Build.VERSION_CODES.N)
 public class AppShortcutsActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

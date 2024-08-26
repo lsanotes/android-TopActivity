@@ -1,15 +1,12 @@
 package com.willme.topactivity;
 
-import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.support.v4.app.NotificationCompat;
 
-import java.util.List;
+import androidx.core.app.NotificationCompat;
 
 /**
  * Created by Wen on 4/18/15.
@@ -26,8 +23,8 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         if (!SPHelper.isNotificationToggleEnabled(context)) {
             return;
         }
-        PendingIntent pIntent = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        PendingIntent pIntent = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "666")
                 .setContentTitle(context.getString(R.string.is_running,
                         context.getString(R.string.app_name)))
                 .setSmallIcon(R.drawable.ic_notification)
@@ -50,19 +47,23 @@ public class NotificationActionReceiver extends BroadcastReceiver {
                 .setContentIntent(pIntent);
 
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(NOTIFICATION_ID, builder.build());
+        if (nm != null) {
+            nm.notify(NOTIFICATION_ID, builder.build());
+        }
 
     }
 
     public static PendingIntent getPendingIntent(Context context, int command) {
         Intent intent = new Intent(ACTION_NOTIFICATION_RECEIVER);
         intent.putExtra(EXTRA_NOTIFICATION_ACTION, command);
-        return PendingIntent.getBroadcast(context, command, intent, 0);
+        return PendingIntent.getBroadcast(context, command, intent, PendingIntent.FLAG_IMMUTABLE);
     }
 
     public static void cancelNotification(Context context) {
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.cancel(NOTIFICATION_ID);
+        if (nm != null) {
+            nm.cancel(NOTIFICATION_ID);
+        }
     }
 
     @Override
@@ -72,16 +73,6 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             case ACTION_RESUME:
                 showNotification(context, false);
                 SPHelper.setIsShowWindow(context, true);
-                boolean lollipop = Build.VERSION.SDK_INT >= 21;
-                if (!lollipop) {
-                    ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.RunningTaskInfo> rtis = am.getRunningTasks(1);
-                    String act = rtis.get(0).topActivity.getPackageName() + "\n"
-                            + rtis.get(0).topActivity.getClassName();
-                    TasksWindow.show(context, act);
-                } else {
-                    TasksWindow.show(context, null);
-                }
                 break;
             case ACTION_PAUSE:
                 showNotification(context, true);

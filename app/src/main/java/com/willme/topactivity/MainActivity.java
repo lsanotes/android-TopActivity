@@ -26,15 +26,13 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mWindowSwitch = (CompoundButton) findViewById(R.id.sw_window);
+        mWindowSwitch = findViewById(R.id.sw_window);
         mWindowSwitch.setOnCheckedChangeListener(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            if (!getResources().getBoolean(R.bool.qs_tile_service_availability)) {
-                findViewById(R.id.useNotificationPref).setVisibility(View.GONE);
-                findViewById(R.id.divider_useNotificationPref).setVisibility(View.GONE);
-            }
+        if (!getResources().getBoolean(R.bool.qs_tile_service_availability)) {
+            findViewById(R.id.useNotificationPref).setVisibility(View.GONE);
+            findViewById(R.id.divider_useNotificationPref).setVisibility(View.GONE);
         }
-        mNotificationSwitch = (CompoundButton) findViewById(R.id.sw_notification);
+        mNotificationSwitch = findViewById(R.id.sw_notification);
         if (mNotificationSwitch != null) {
             mNotificationSwitch.setOnCheckedChangeListener(this);
         }
@@ -46,7 +44,11 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
             mWindowSwitch.setChecked(true);
         }
         mReceiver = new UpdateSwitchReceiver();
-        registerReceiver(mReceiver, new IntentFilter(ACTION_STATE_CHANGED));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ) {
+            registerReceiver(mReceiver, new IntentFilter(ACTION_STATE_CHANGED), Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(mReceiver, new IntentFilter(ACTION_STATE_CHANGED));
+        }
     }
 
     @Override
